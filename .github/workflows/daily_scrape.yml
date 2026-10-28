@@ -1,0 +1,31 @@
+name: DMCL Daily REF Price Scrape
+
+on:
+  schedule:
+    # 00:00 UTC = 07:00 AM giờ Việt Nam (UTC+7) mỗi ngày
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Cho phép bấm nút "Run workflow" thủ công trên GitHub UI
+
+jobs:
+  scrape-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Scraper & Sync Google Sheets
+        env:
+          GOOGLE_WORKSPACE_CLIENT_ID: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_ID }}
+          GOOGLE_WORKSPACE_CLIENT_SECRET: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_SECRET }}
+          GOOGLE_WORKSPACE_REFRESH_TOKEN: ${{ secrets.GOOGLE_WORKSPACE_REFRESH_TOKEN }}
+          SPREADSHEET_ID: "1r0oqzTog9jwFhIDl717CUQTsYfAcET_phuDbGyP5tJs"
+        run: python scrape_and_export_gsheets.py
